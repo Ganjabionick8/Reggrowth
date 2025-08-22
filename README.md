@@ -1,6 +1,6 @@
 🌱 Reggrowth – Assistente Herbal
 
-Plataforma de cultivo para quem já desistiu de complicar.  
+Ainda não tenho uma frase de efeito legal aqui.
 Descubra como cuidar de plantas com dicas simples, diretas e com aquele toque de sabedoria verde.
 
 🚀 Funcionalidades
