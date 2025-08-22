@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Herbal Assistant — Ganjabionick8</title>
+  <meta name="description" content="Assistente de ervas medicinais — guia de cultivo, benefícios e lembretes locais (offline)" />
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --panel:#12131a;
+      --panel-2:#171826;
+      --txt:#e8eaf2;
+      --muted:#a7adcc;
+      --brand:#6a6ef7;
+      --ok:#4ade80;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+      --line: #2a2c3f;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:radial-gradient(1200px 800px at 120% -10%,#1a1b2b10,transparent), var(--bg);
+      color:var(--txt); font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      letter-spacing:0.2px;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:20px}
+    header{display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; padding:10px 0 14px; border-bottom:1px solid var(--line);}
+    .brand{display:flex; align-items:center; gap:12px}
+    .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--brand),#9a9dfb);box-shadow:0 0 24px #6a6ef748}
+    h1{font-size:1.25rem;margin:0}
+    .subtitle{color:var(--muted);font-size:0.95rem}
+    .topbar{display:flex;gap:10px;flex-wrap:wrap}
+    .search{position:relative}
+    .search input{
+      background:var(--panel);border:1px solid var(--line);color:var(--txt);
+      padding:10px 36px 10px 12px;border-radius:12px;outline:none;min-width:250px
+    }
+    .search .icon{position:absolute;right:10px;top:50%;transform:translateY(-50%);opacity:.7}
+    .btn{background:var(--panel);color:var(--txt);border:1px solid var(--line);padding:10px 14px;border-radius:12px;cursor:pointer}
+    .btn:hover{border-color:#3a3d55}
+    .btn.primary{background:linear-gradient(135deg,#6a6ef7,#8f92ff);color:#0b0c10;border:none}
+    .tabs{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+    .tab{padding:8px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);cursor:pointer;color:var(--muted)}
+    .tab.active{background:var(--brand);color:#0b0c10;border-color:transparent}
+    section{display:none;padding:18px 0}
+    section.active{display:block}
+    .grid{display:grid;gap:14px}
+    @media (min-width:700px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (min-width:1000px){.grid{grid-template-columns:repeat(3,1fr)}}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 6px 24px #00000033}
+    .card h3{margin:4px 0 6px}
+    .tiny{font-size:.9rem;color:var(--muted)}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .kv{margin:8px 0 0;padding:0;list-style:none}
+    .kv li{display:flex;gap:8px;margin:6px 0}
+    .kv b{color:#cbd1ff;min-width:120px}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{padding:10px;border-bottom:1px dashed var(--line);text-align:left}
+    .pill{padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#101225;display:inline-block}
+    .row{display:grid;gap:10px;grid-template-columns:1fr}
+    @media(min-width:640px){.row{grid-template-columns:repeat(2,1fr)}}
+    label{display:block;font-size:.9rem;color:var(--muted);margin-bottom:6px}
+    input,select,textarea{width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0f1120;color:var(--txt);outline:none}
+    .muted{color:var(--muted)}
+    .hint{font-size:.85rem;color:var(--muted)}
+    .status-ok{color:var(--ok)}
+    .status-warn{color:var(--warn)}
+    .status-bad{color:var(--bad)}
+    footer{margin:30px 0 10px;color:var(--muted);text-align:center;font-size:.9rem}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Herbal Assistant <span class="mono">– Ganjabionick8</span></h1>
+          <div class="subtitle">Guia de cultivo + benefícios • Lembretes locais •</div>
+        </div>
+      </div>
+      <div class="topbar">
+        <div class="search">
+          <input id="search" type="text" placeholder="Buscar erva por nome…" />
+          <span class="icon">🔎</span>
+        </div>
+        <button class="btn" id="btn-export">Exportar dados</button>
+        <button class="btn" id="btn-import">Importar dados</button>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="biblioteca">🌿 Biblioteca</button>
+      <button class="tab" data-tab="cultivos">🪴 Meus Cultivos</button>
+      <button class="tab" data-tab="lembretes">⏰ Lembretes</button>
+      <button class="tab" data-tab="sobre">ℹ️ Sobre</button>
+    </nav>
+
+    <!-- Biblioteca -->
+    <section id="biblioteca" class="active" role="tabpanel">
+      <div class="hint">Toque em adicionar ao seu cultivo.</div>
+      <div id="lista-ervas" class="grid" aria-live="polite"></div>
+    </section>
+
+    <!-- Cultivos -->
+    <section id="cultivos" role="tabpanel">
+      <div class="card" style="margin-bottom:14px">
+        <h3>Adicionar novo cultivo</h3>
+        <div class="row">
+          <div>
+            <label>Planta</label>
+            <select id="plant-select"></select>
+          </div>
+          <div>
+            <label>Apelido (opcional)</label>
+            <input id="plant-nick" placeholder="Ex.: Jardim da Esquina" />
+          </div>
+          <div>
+            <label>Data de início</label>
+            <input id="plant-start" type="date" />
+          </div>
+          <div>
+            <label>Intervalo de rega (dias)</label>
+            <input id="plant-interval" type="number" min="1" value="2" />
+          </div>
+          <div>
+            <label>Notas</label>
+            <input id="plant-notes" placeholder="Solo, luz, sementes…" />
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn primary" id="btn-add">Adicionar cultivo</button>
+          <span class="hint">Os dados ficam salvos apenas no seu dispositivo (localStorage).</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Lista de cultivos</h3>
+        <table class="table" id="cultivos-table">
+          <thead>
+            <tr>
+              <th>Planta</th><th>Apelido</th><th>Início</th><th>Próx. rega</th><th>Status</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Lembretes -->
+    <section id="lembretes" role="tabpanel">
+      <div class="grid">
+        <div class="card">
+          <h3>Resumo de regas</h3>
+          <div id="resumo-rega" class="tiny"></div>
+        </div>
+        <div class="card">
+          <h3>Fases da Planta</h3>
+          <p class="tiny">Cálculo simples por dias desde a data de início (padrão educativo, ajuste como preferir).</p>
+          <div class="row">
+            <div>
+              <label>Data de germinação</label>
+              <input type="date" id="ps-start" />
+            </div>
+          </div>
+          <div style="margin-top:10px">
+            <button id="btn-ps" class="btn primary">Calcular fase</button>
+            <div id="ps-out" class="tiny" style="margin-top:10px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sobre -->
+    <section id="sobre" role="tabpanel">
+      <div class="card">
+        <h3>Sobre o projeto</h3>
+        <p>Herbal Assistant é um app local que reúne <b>guia de cultivo</b>, <b>benefícios medicinais</b> e <b>lembretes de cuidados</b>. Design escuro minimalista. Os dados ficam no seu dispositivo.</p>
+        <ul class="kv">
+          <li><b>Autor</b> <span>Gabriel — <span class="mono">Ganjabionick8</span></span></li>
+          <li><b>Exportação</b> <span>Baixe/importe um arquivo .json com seus dados.</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Como usar</h3>
+        <ol>
+          <li>Navegue na <b>Biblioteca</b> e conheça as ervas.</li>
+          <li>No menu <b>Meus Cultivos</b>, adicione plantas com data de início e intervalo de rega.</li>
+          <li>Acompanhe os <b>Lembretes</b> e marque regas conforme for cuidando.</li>
+        </ol>
+        <p class="hint">Dica: Instale como PWA (Adicionar à tela inicial) para usar como app.</p>
+      </div>
+    </section>
+
+    <footer>
+      <span class="muted">v0.1 • Feito com ☕ e 🌿 — “Plataforma de cultivo para quem já desistiu de complicar.”</span>
+    </footer>
+  </div>
+
+<script>
+const BIBLIOTECA = [
+  {id:"alecrim", nome:"Alecrim", cientifico:"Salvia rosmarinus", cultivo:{solo:"Bem drenado", luz:"Pleno sol", agua:"Moderada", ciclo:"Perene"}, beneficios:["Estimulante mental","Digestivo","Antioxidante","Culinário aromático"], preparos:[{tipo:"Chá", modo:"Infusão das folhas em água quente por 5–10 min"}], dicas:["Pode ser podado","Evite vasos sem drenagem"], intervaloPadrao:3},
+  {id:"babosa", nome:"Babosa", cientifico:"Aloe vera", cultivo:{solo:"Rico e drenado", luz:"Sol parcial", agua:"Moderada", ciclo:"Perene"}, beneficios:["Cicatrizante","Hidratante","Anti-inflamatório leve"], preparos:[{tipo:"Gel", modo:"Aplicação direta do gel"}], dicas:["Evitar excesso de sol","Cortar folhas externas para uso"], intervaloPadrao:3},
+  {id:"camomila", nome:"Camomila", cientifico:"Matricaria chamomilla", cultivo:{solo:"Leve e bem drenado", luz:"Sol pleno a meia-sombra", agua:"Moderada", ciclo:"Anual"}, beneficios:["Calmante","Auxilia sono","Anti-inflamatório suave"], preparos:[{tipo:"Chá", modo:"Infusão das flores secas em água quente 5–10 min"}], dicas:["Prefere climas amenos","Flores colhidas para chá"], intervaloPadrao:2},
+  {id:"cebolinha", nome:"Cebolinha", cientifico:"Allium schoenoprasum", cultivo:{solo:"Rico e drenado", luz:"Pleno sol", agua:"Moderada", ciclo:"Perene"}, beneficios:["Diurético leve","Aromática para pratos","Antioxidante"], preparos:[{tipo:"Tempero", modo:"Folhas picadas em saladas"}], dicas:["Manter solo úmido","Pode ser podada com frequência"], intervaloPadrao:2},
+  {id:"canabis", nome:"Cannabis", cientifico:"Cannabis sativa", cultivo:{solo:"Rico e bem drenado", luz:"Pleno sol", agua:"Moderada", ciclo:"Anual"}, beneficios:["Analgésico","Reduz ansiedade","Anti-inflamatório"], preparos:[{tipo:"Óleo medicinal", modo:"Extração das flores em óleo vegetal"}], dicas:["Requer autorização local","Manter ambiente seco"], intervaloPadrao:3},
+  {id:"capim-limao", nome:"Capim-limão", cientifico:"Cymbopogon citratus", cultivo:{solo:"Rico e drenado", luz:"Sol pleno", agua:"Moderada a frequente", ciclo:"Perene"}, beneficios:["Calmante leve","Digestivo","Aromático culinário"], preparos:[{tipo:"Chá", modo:"Infusão das folhas 5–10 min"}], dicas:["Aceita podas drásticas","Prefere calor intenso"], intervaloPadrao:3},
+  {id:"erva-cidreira", nome:"Erva-cidreira", cientifico:"Melissa officinalis", cultivo:{solo:"Rico e drenado", luz:"Meia-sombra", agua:"Moderada", ciclo:"Perene"}, beneficios:["Calmante","Digestivo","Anti-inflamatório leve"], preparos:[{tipo:"Chá", modo:"Infusão das folhas 5–10 min"}], dicas:["Pode ser podada","Evitar solos secos demais"], intervaloPadrao:3},
+  {id:"gengibre", nome:"Gengibre", cientifico:"Zingiber officinale", cultivo:{solo:"Rico e drenado", luz:"Pleno ou parcial", agua:"Moderada", ciclo:"Perene"}, beneficios:["Digestivo","Anti-inflamatório","Aquecedor culinário"], preparos:[{tipo:"Chá", modo:"Ralar a raiz e ferver 5–10 min"}], dicas:["Evitar excesso de água","Colher raízes maduras"], intervaloPadrao:3},
+  {id:"hortela", nome:"Hortelã", cientifico:"Mentha sp.", cultivo:{solo:"Fértil e úmido", luz:"Meia-sombra", agua:"Frequente, sem encharcar", ciclo:"Perene"}, beneficios:["Calmante digestivo","Aromático","Descongestionante leve"], preparos:[{tipo:"Chá", modo:"Infusão das folhas 5 min"}], dicas:["Pode se espalhar muito","Colha folhas jovens"], intervaloPadrao:2},
+  {id:"lavanda", nome:"Lavanda", cientifico:"Lavandula angustifolia", cultivo:{solo:"Bem drenado", luz:"Pleno sol", agua:"Moderada", ciclo:"Perene"}, beneficios:["Relaxante","Auxilia sono","Aromática culinária leve"], preparos:[{tipo:"Óleo essencial", modo:"Destilação das flores"}], dicas:["Evitar excesso de água","Podar após florescer"], intervaloPadrao:3},
+  {id:"manjericao", nome:"Manjericão", cientifico:"Ocimum basilicum", cultivo:{solo:"Rico e drenado", luz:"Pleno sol", agua:"Moderada", ciclo:"Anual ou perene"}, beneficios:["Digestivo","Aromático culinário","Antioxidante"], preparos:[{tipo:"Tempero", modo:"Folhas frescas em pratos"}], dicas:["Evitar frio intenso","Pode ser podado"], intervaloPadrao:2},
+  {id:"orégano", nome:"Orégano", cientifico:"Origanum vulgare", cultivo:{solo:"Bem drenado", luz:"Pleno sol", agua:"Moderada", ciclo:"Perene"}, beneficios:["Antibacteriano leve","Digestivo","Aromático culinário"], preparos:[{tipo:"Tempero", modo:"Folhas secas em temperos"}], dicas:["Resiste bem a podas","Prefere clima quente"], intervaloPadrao:3},
+  {id:"salsinha", nome:"Salsinha", cientifico:"Petroselinum crispum", cultivo:{solo:"Fértil e drenado", luz:"Pleno sol", agua:"Moderada", ciclo:"Bienal"}, beneficios:["Digestivo","Aromático culinário","Diurético leve"], preparos:[{tipo:"Tempero", modo:"Folhas frescas em pratos"}], dicas:["Manter solo úmido","Colher folhas externas"], intervaloPadrao:2},
+  {id:"tomilho", nome:"Tomilho", cientifico:"Thymus vulgaris", cultivo:{solo:"Bem drenado", luz:"Pleno sol", agua:"Moderada", ciclo:"Perene"}, beneficios:["Antisséptico","Digestivo","Aromático"], preparos:[{tipo:"Chá", modo:"Infusão das folhas 5–10 min"}], dicas:["Evitar excesso de água","Pode ser podado"], intervaloPadrao:3}
+];
+
+const searchInput = document.getElementById('search');
+const listaErvas = document.getElementById('lista-ervas');
+const plantSelect = document.getElementById('plant-select');
+const btnAdd = document.getElementById('btn-add');
+const cultivosTableBody = document.querySelector('#cultivos-table tbody');
+const resumoRega = document.getElementById('resumo-rega');
+const tabs = document.querySelectorAll('.tab');
+const sections = document.querySelectorAll('section');
+
+let cultivos = JSON.parse(localStorage.getItem('cultivos'))||[];
+
+function renderBiblioteca(filter=''){
+  listaErvas.innerHTML='';
+  const filtered = BIBLIOTECA.filter(e=>e.nome.toLowerCase().includes(filter.toLowerCase()));
+  filtered.forEach(e=>{
+    const card = document.createElement('div');
+    card.className='card';
+    card.innerHTML=`
+      <h3>${e.nome}</h3>
+      <div class="tiny">${e.cientifico}</div>
+      <ul class="kv">
+        <li><b>Solo</b> ${e.cultivo.solo}</li>
+        <li><b>Luz</b> ${e.cultivo.luz}</li>
+        <li><b>Água</b> ${e.cultivo.agua}</li>
+        <li><b>Ciclo</b> ${e.cultivo.ciclo}</li>
+        <li><b>Benefícios</b> ${e.beneficios.join(', ')}</li>
+        <li><b>Preparos</b> ${e.preparos.map(p=>`${p.tipo}: ${p.modo}`).join('; ')}</li>
+        <li><b>Dicas</b> ${e.dicas.join(', ')}</li>
+      </ul>
+      <button class="btn primary" onclick="addCultivo('${e.id}')">Adicionar ao cultivo</button>
+    `;
+    listaErvas.appendChild(card);
+  });
+  renderSelectOptions();
+}
+
+function renderSelectOptions(){
+  plantSelect.innerHTML='';
+  BIBLIOTECA.forEach(e=>{
+    const option = document.createElement('option');
+    option.value=e.id; option.textContent=e.nome;
+    plantSelect.appendChild(option);
+  });
+}
+
+function saveCultivos(){localStorage.setItem('cultivos',JSON.stringify(cultivos))}
+
+function addCultivo(id){
+  const erva = BIBLIOTECA.find(e=>e.id===id);
+  const nick = document.getElementById('plant-nick').value||erva.nome;
+  const start = document.getElementById('plant-start').value||new Date().toISOString().slice(0,10);
+  const interval = parseInt(document.getElementById('plant-interval').value)||erva.intervaloPadrao;
+  const notes = document.getElementById('plant-notes').value||'';
+  cultivos.push({id, nick, start, interval, notes});
+  saveCultivos();
+  renderCultivos();
+}
+
+function renderCultivos(){
+  cultivosTableBody.innerHTML='';
+  const hoje = new Date();
+  cultivos.forEach((c,i)=>{
+    const erva = BIBLIOTECA.find(e=>e.id===c.id);
+    const start = new Date(c.start);
+    const diff = Math.ceil((hoje-start)/(1000*60*60*24));
+    const proxRega = c.interval - (diff%c.interval);
+    const status = proxRega<=1?'💧 Hoje':`⏳ ${proxRega} dias`;
+    const tr = document.createElement('tr');
+    tr.innerHTML=`<td>${erva.nome}</td><td>${c.nick}</td><td>${c.start}</td><td>${diff>0?proxRega:'—'}</td><td>${status}</td><td><button class="btn" onclick="deleteCultivo(${i})">❌</button></td>`;
+    cultivosTableBody.appendChild(tr);
+  });
+  renderResumoRega();
+}
+
+function deleteCultivo(i){cultivos.splice(i,1);saveCultivos();renderCultivos()}
+
+function renderResumoRega(){
+  resumoRega.innerHTML='';
+  if(cultivos.length===0){resumoRega.textContent='Nenhum cultivo cadastrado.'; return;}
+  cultivos.forEach(c=>{
+    const erva = BIBLIOTECA.find(e=>e.id===c.id);
+    const start = new Date(c.start);
+    const diff = Math.ceil((new Date()-start)/(1000*60*60*24));
+    const proxRega = c.interval - (diff%c.interval);
+    resumoRega.innerHTML+=`<div>${erva.nome} (${c.nick}) → ${proxRega<=1?'Hoje':'Próx. rega em '+proxRega+' dias'}</div>`;
+  });
+}
+
+searchInput.addEventListener('input',e=>renderBiblioteca(e.target.value));
+btnAdd.addEventListener('click',()=>addCultivo(plantSelect.value));
+
+tabs.forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    tabs.forEach(t=>t.classList.remove('active'));
+    sections.forEach(s=>s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  });
+});
+
+// Inicial
+renderBiblioteca();
+renderCultivos();
+
+// Import/Export
+document.getElementById('btn-export').addEventListener('click',()=>{
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cultivos));
+  const dlAnchor = document.createElement('a');
+  dlAnchor.setAttribute("href", dataStr);
+  dlAnchor.setAttribute("download", "cultivos.json");
+  dlAnchor.click();
+});
+document.getElementById('btn-import').addEventListener('click',()=>{
+  const input = document.createElement('input'); input.type='file'; input.accept='.json';
+  input.onchange=e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e=>{
+      try{cultivos=JSON.parse(e.target.result); saveCultivos(); renderCultivos();}catch(err){alert('Erro ao importar')}
+    }
+    reader.readAsText(file);
+  }
+  input.click();
+});
+
+document.getElementById('btn-ps').addEventListener('click',()=>{
+  const start = document.getElementById('ps-start').value;
+  if(!start){alert('Selecione uma data');return;}
+  const diff = Math.floor((new Date()-new Date(start))/(1000*60*60*24));
+  let fase='Germinação';
+  if(diff>14) fase='Planta jovem';
+  if(diff>30) fase='Planta adulta';
+  if(diff>90) fase='Floração';
+  document.getElementById('ps-out').textContent=`${diff} dias desde a germinação → ${fase}`;
+});
+</script>
+</body>
+</html>
