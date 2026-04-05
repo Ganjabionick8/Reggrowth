@@ -293,33 +293,41 @@ function renderCultivos(){
 
 function deleteCultivo(i){cultivos.splice(i,1);saveCultivos();renderCultivos()}
 
-function renderResumoRega(){
-  resumoRega.innerHTML='';
-  if(cultivos.length===0){resumoRega.textContent='Nenhum cultivo cadastrado.'; return;}
-  cultivos.forEach(c=>{
+function renderCultivos(){
+  cultivosTableBody.innerHTML='';
+  // Zera as horas para o cálculo ser apenas por data calendário (vIsAo N2)
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0); 
+
+  cultivos.forEach((c,i)=>{
     const erva = BIBLIOTECA.find(e=>e.id===c.id);
     const start = new Date(c.start);
-    const diff = Math.ceil((new Date()-start)/(1000*60*60*24));
-    const proxRega = c.interval - (diff%c.interval);
-    resumoRega.innerHTML+=`<div>${erva.nome} (${c.nick}) → ${proxRega<=1?'Hoje':'Próx. rega em '+proxRega+' dias'}</div>`;
+    start.setHours(0,0,0,0);
+    
+    // Diferença exata em dias
+    const diff = Math.floor((hoje - start) / (1000 * 60 * 60 * 24));
+    
+    // Lógica de próxima rega ajustada
+    let proxRega = c.interval - (diff % c.interval);
+    if (proxRega === c.interval && diff !== 0) proxRega = 0; 
+    
+    const status = (proxRega <= 0 || diff % c.interval === 0) ? '💧 Hoje' : `⏳ ${proxRega} dias`;
+
+    // AQUI É O QUE FALTAVA (O desenho da tabela):
+    const tr = document.createElement('tr');
+    tr.innerHTML=`
+      <td>${erva.nome}</td>
+      <td>${c.nick}</td>
+      <td>${c.start}</td>
+      <td>${diff >= 0 ? (proxRega === 0 ? 'Hoje' : proxRega + ' dias') : '—'}</td>
+      <td>${status}</td>
+      <td><button class="btn" onclick="deleteCultivo(${i})">❌</button></td>
+    `;
+    cultivosTableBody.appendChild(tr);
   });
+  renderResumoRega();
 }
 
-searchInput.addEventListener('input',e=>renderBiblioteca(e.target.value));
-btnAdd.addEventListener('click',()=>addCultivo(plantSelect.value));
-
-tabs.forEach(tab=>{
-  tab.addEventListener('click',()=>{
-    tabs.forEach(t=>t.classList.remove('active'));
-    sections.forEach(s=>s.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById(tab.dataset.tab).classList.add('active');
-  });
-});
-
-// Inicial
-renderBiblioteca();
-renderCultivos();
 
 // Import/Export
 document.getElementById('btn-export').addEventListener('click',()=>{
